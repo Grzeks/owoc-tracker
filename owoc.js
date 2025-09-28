@@ -32,39 +32,44 @@ document.addEventListener('DOMContentLoaded', () => {
     return `${h}:${m.toString().padStart(2, '0')}`;
   }
 
-  async function renderEntries() {
-    const res = await fetch(API_URL);
-    const data = await res.json();
-    tbody.innerHTML = '';
-    let totalMinutes = 0;
-    const now = new Date();
-    const currentMonth = now.getMonth();
+  async function render() {
+  const entries = await fetchEntries();
+  const tbody = document.getElementById('entries');
+  tbody.innerHTML = '';
+  let monthTotal = 0;
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
 
-    data.forEach(row => {
-      const tr = document.createElement('tr');
-      const td1 = document.createElement('td');
-      const td2 = document.createElement('td');
-      td1.textContent = row.data;
-      td2.textContent = row.czas;
-      tr.append(td1, td2);
-      tbody.appendChild(tr);
+  entries.forEach(e => {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    const td2 = document.createElement('td');
+    td1.textContent = e.data;
+    td2.textContent = e.czas;
+    tr.append(td1, td2);
+    tbody.appendChild(tr);
 
-      const rowDate = new Date(row.data);
-      if (rowDate.getMonth() === currentMonth) {
-        totalMinutes += parseTimeToMinutes(row.czas);
-      }
-    });
+    // Wyciągamy datę tylko do porównania miesiąca
+    const [day, month, year] = e.data.split('.').map(Number);
+    const fullYear = 2000 + year; // z "25" zrobimy "2025"
 
-    const totalMonth = formatMinutesToHM(totalMinutes);
-    const goalMinutes = 30 * 60;
-    const leftToGoal = Math.max(goalMinutes - totalMinutes, 0);
-    const daysLeft = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate();
-    const avgDaily = daysLeft > 0 ? Math.ceil(leftToGoal / daysLeft) : 0;
+    if (fullYear === currentYear && month - 1 === currentMonth) {
+      const [h, m] = e.czas.split(':').map(Number);
+      monthTotal += h * 60 + m;
+    }
+  });
 
-    document.getElementById('total-month').textContent = totalMonth;
-    document.getElementById('left-to-goal').textContent = formatMinutesToHM(leftToGoal);
-    document.getElementById('avg-daily').textContent = formatMinutesToHM(avgDaily);
-  }
+  const goalMinutes = 30 * 60;
+  const toGoal = goalMinutes - monthTotal;
+  const daysLeft = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate();
+  const avgPerDay = daysLeft > 0 ? Math.ceil(toGoal / daysLeft) : 0;
+
+  document.getElementById('total-month').textContent = minutesToHM(monthTotal);
+  document.getElementById('left-to-goal').textContent = minutesToHM(Math.max(toGoal, 0));
+  document.getElementById('avg-daily').textContent = minutesToHM(avgPerDay);
+}
 
   renderEntries();
 });
+
