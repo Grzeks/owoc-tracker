@@ -6,11 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('entry-form').addEventListener('submit', e => {
     e.preventDefault();
-    const data = document.getElementById('data').value;
-    const czas = document.getElementById('czas').value;
-    if (!data || !czas) return alert('Wpisz datę i czas.');
 
-    const payload = { data, czas };
+    // surowa data z inputa typu date (YYYY-MM-DD)
+    const rawDate = document.getElementById('data').value;
+    const czas = document.getElementById('czas').value;
+
+    if (!rawDate || !czas) return alert('Wpisz datę i czas.');
+
+    // zamiana YYYY-MM-DD na dd.MM.yy
+    const [yyyy, mm, dd] = rawDate.split('-');
+    const formattedDate = `${dd}.${mm}.${yyyy.slice(-2)}`; // np. 28.09.25
+
+    const payload = { data: formattedDate, czas: czas };
+
+    console.log("📤 Wysyłam payload do Apps Script:", payload);
 
     fetch(API_URL, {
       method: 'POST',
@@ -18,11 +27,17 @@ document.addEventListener('DOMContentLoaded', () => {
       headers: { 'Content-Type': 'application/json' }
     })
     .then(res => res.json())
-    .then(() => {
-      document.getElementById('data').value = '';
-      document.getElementById('czas').value = '';
-      fetchData(); // odśwież widok
-    });
+    .then(result => {
+      console.log("📥 Odpowiedź serwera:", result);
+      if (result.success) {
+        document.getElementById('data').value = '';
+        document.getElementById('czas').value = '';
+        fetchData(); // odśwież widok
+      } else {
+        alert("❌ Błąd zapisu: " + (result.error || 'nieznany'));
+      }
+    })
+    .catch(err => console.error("Błąd podczas POST:", err));
   });
 });
 
@@ -33,7 +48,8 @@ function fetchData() {
       console.info('📦 Odebrano dane z serwera:', data);
       displayEntries(data);
       calculateSummary(data);
-    });
+    })
+    .catch(err => console.error("Błąd podczas pobierania danych:", err));
 }
 
 function displayEntries(entries) {
@@ -72,9 +88,9 @@ function calculateSummary(entries) {
 
   const today = new Date();
   const year = today.getFullYear();
-  const month = today.getMonth(); // 0-based
+  const month = today.getMonth();
   const lastDay = new Date(year, month + 1, 0).getDate();
-  const daysLeft = Math.max(1, lastDay - today.getDate() + 1); // jeszcze dziś
+  const daysLeft = Math.max(1, lastDay - today.getDate() + 1);
   const avgPerDay = Math.ceil(minutesLeft / daysLeft);
   const avgH = Math.floor(avgPerDay / 60);
   const avgM = avgPerDay % 60;
