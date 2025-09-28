@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function render() {
     const entries = await fetchEntries();
+    console.log(entries);
     const tbody = document.getElementById('entries');
     tbody.innerHTML = '';
     let monthTotal = 0;
@@ -75,3 +76,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
   render();
 });
+
