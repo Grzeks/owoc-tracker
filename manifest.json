@@ -1,19 +1,18 @@
 {
-  "name": "Czas Tracker",
-  "short_name": "Czas",
-  "start_url": ".",
+  "name": "Owoc Tracker",
+  "short_name": "Owoc",
+  "start_url": "owoc.html",
   "display": "standalone",
-  "background_color": "#222222",
-  "theme_color": "#222222",
-  "orientation": "portrait",
+  "background_color": "#1e1e1e",
+  "theme_color": "#1e1e1e",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "icon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
