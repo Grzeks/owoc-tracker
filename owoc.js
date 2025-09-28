@@ -45,17 +45,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function fetchData() {
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-      console.info('📦 Odebrano dane z serwera:', data);
-      displayEntries(data);
-      calculateSummary(data);
-    })
-    .catch(err => {
-      console.error('❌ Błąd pobierania:', err);
-      alert('Nie udało się pobrać danych z serwera.');
-    });
+  fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify({ mode: 'read' }),
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.info('📦 Odebrano dane z serwera:', data);
+    displayEntries(data);
+    calculateSummary(data);
+  })
+  .catch(err => {
+    console.error('❌ Błąd pobierania:', err);
+    alert('Nie udało się pobrać danych z serwera.');
+  });
 }
 
 function displayEntries(entries) {
@@ -108,3 +112,4 @@ function formatDateForServer(dateStr) {
   const [year, month, day] = dateStr.split('-');
   return `${day}.${month}.${year.slice(-2)}`;
 }
+
