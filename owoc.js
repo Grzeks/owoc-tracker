@@ -1,4 +1,5 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbxZBWYgelwnO1T5m-T-xYxH7Z04gr3H1JF8h6Q1fDb_jlj4lv5UR3TLImcBXJXCTkYvgQ/exec';
+const API_URL = 'const API_URL = 'https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLjZQSe1eOdetaMn8-d1lZEoXTxt-IeqInFEcv7PA42xEuyJH89oeDWXs939aFrlV0Ss-ZPHWMkIfhat13upu_vrIFlzC_ns14ZFBGWoez-y-mZiSDr5QSd1_xi34dPIxIcpt9GojKWjLMUXsSRibt-p-QrEVs7PiucBZ7ufWT-NNFesDGoEZUH41AgU6fWMMejmIyvXO1PeIGbWd7fejR0MG3Jq0vQjs7dPCAHXpruAUFsM7mdqtXieOXXnNL98hqlaP1u4q1t70OyW0kM1WrrnQf1areqF84t4D5ZJ&lib=MqNnFWWVaPXqcbRxDFo_zJca4wUx9W7qg';
+';
 const CEL_GODZIN = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,6 +96,7 @@ function formatDateForServer(dateStr) {
   const [year, month, day] = dateStr.split('-');
   return `${day}.${month}.${year.slice(-2)}`;
 }
+
 
 
 
