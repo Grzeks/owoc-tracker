@@ -1,87 +1,85 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbyC1xwBKI-B-fylF_r7gM5ch6UuHnC8tHzSP22TEYcGTdVirHkXyFX6xctHYmCoj3Ftsg/exec';
+const CEL_GODZIN = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
-  pobierzDane();
+  fetchData();
 
-  const form = document.getElementById('entry-form');
-  form.addEventListener('submit', async (e) => {
+  document.getElementById('entry-form').addEventListener('submit', e => {
     e.preventDefault();
     const data = document.getElementById('data').value;
     const czas = document.getElementById('czas').value;
-    if (!data || !czas) return;
+    if (!data || !czas) return alert('Wpisz datę i czas.');
 
-    await fetch(API_URL, {
+    const payload = { data, czas };
+
+    fetch(API_URL, {
       method: 'POST',
-      body: JSON.stringify({ data, czas }),
+      body: JSON.stringify(payload),
       headers: { 'Content-Type': 'application/json' }
+    })
+    .then(res => res.json())
+    .then(() => {
+      document.getElementById('data').value = '';
+      document.getElementById('czas').value = '';
+      fetchData(); // odśwież widok
     });
-
-    form.reset();
-    pobierzDane();
   });
 });
 
-async function pobierzDane() {
-  try {
-    const res = await fetch(API_URL);
-    const dane = await res.json();
-    console.log("📥 Odebrano dane z serwera:", dane);
-
-    const tbody = document.getElementById('entries');
-    tbody.innerHTML = '';
-
-    let totalMinutes = 0;
-
-    dane.forEach(entry => {
-      const row = document.createElement('tr');
-
-      // 👇 Data: już jako string dd.mm.yy – nie trzeba Date()
-      const cellDate = document.createElement('td');
-      cellDate.textContent = entry.data;
-
-      // 👇 Czas: też gotowy string (np. "1:30")
-      const cellTime = document.createElement('td');
-      cellTime.textContent = entry.czas;
-
-      row.appendChild(cellDate);
-      row.appendChild(cellTime);
-      tbody.appendChild(row);
-
-      // 💡 Dodaj do sumy:
-      const [h, m] = entry.czas.split(':').map(Number);
-      totalMinutes += h * 60 + m;
+function fetchData() {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      console.info('📦 Odebrano dane z serwera:', data);
+      displayEntries(data);
+      calculateSummary(data);
     });
+}
 
-    aktualizujPodsumowanie(totalMinutes);
-  } catch (err) {
-    console.error('❌ Błąd podczas pobierania danych:', err);
+function displayEntries(entries) {
+  const tbody = document.getElementById('entries');
+  tbody.innerHTML = '';
+
+  entries.forEach(entry => {
+    const tr = document.createElement('tr');
+    const tdData = document.createElement('td');
+    const tdCzas = document.createElement('td');
+    tdData.textContent = entry.data;
+    tdCzas.textContent = entry.czas;
+    tr.append(tdData, tdCzas);
+    tbody.appendChild(tr);
+  });
+}
+
+function calculateSummary(entries) {
+  let totalMinutes = 0;
+
+  for (const entry of entries) {
+    const [h, m] = entry.czas.split(':').map(Number);
+    totalMinutes += h * 60 + m;
   }
-}
 
-function aktualizujPodsumowanie(totalMinutes) {
   const totalHours = Math.floor(totalMinutes / 60);
-  const totalRemainingMinutes = totalMinutes % 60;
+  const totalRest = totalMinutes % 60;
 
-  document.getElementById('total-month').textContent = `${totalHours}:${totalRemainingMinutes.toString().padStart(2, '0')}`;
+  document.getElementById('total-month').textContent = `${totalHours}:${totalRest.toString().padStart(2, '0')}`;
 
-  const celMinut = 30 * 60;
-  const left = celMinut - totalMinutes;
-  const leftHours = Math.floor(left / 60);
-  const leftMinutes = left % 60;
+  const minutesGoal = CEL_GODZIN * 60;
+  const minutesLeft = Math.max(0, minutesGoal - totalMinutes);
+  const leftHours = Math.floor(minutesLeft / 60);
+  const leftRest = minutesLeft % 60;
+  document.getElementById('left-to-goal').textContent = `${leftHours}:${leftRest.toString().padStart(2, '0')}`;
 
-  document.getElementById('left-to-goal').textContent = `${leftHours}:${leftMinutes.toString().padStart(2, '0')}`;
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0-based
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const daysLeft = Math.max(1, lastDay - today.getDate() + 1); // jeszcze dziś
+  const avgPerDay = Math.ceil(minutesLeft / daysLeft);
+  const avgH = Math.floor(avgPerDay / 60);
+  const avgM = avgPerDay % 60;
 
-  const dzisiaj = new Date();
-  const dniWRoku = new Date(dzisiaj.getFullYear(), dzisiaj.getMonth() + 1, 0).getDate();
-  const dzis = dzisiaj.getDate();
-  const dniPozostale = dniWRoku - dzis;
+  document.getElementById('avg-daily').textContent = `${avgH}:${avgM.toString().padStart(2, '0')}`;
 
-  const avgDaily = dniPozostale > 0 ? left / dniPozostale : 0;
-  const avgHours = Math.floor(avgDaily / 60);
-  const avgMinutes = Math.round(avgDaily % 60);
-
-  document.getElementById('avg-daily').textContent = `${avgHours}:${avgMinutes.toString().padStart(2, '0')}`;
-
-  console.log(`✅ Suma: ${totalHours}:${totalRemainingMinutes.toString().padStart(2, '0')}`);
+  console.info('✅ Suma:', totalHours + ':' + totalRest.toString().padStart(2, '0'));
 }
-
