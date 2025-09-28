@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbwAmFJkJCc0jx4zP4nHday78jejaIpEWd7054tO1USmiOEQ0zE-MKGx0y8aJj7yWt6Bgw/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbyC1xwBKI-B-fylF_r7gM5ch6UuHnC8tHzSP22TEYcGTdVirHkXyFX6xctHYmCoj3Ftsg/exec';
 
 document.addEventListener('DOMContentLoaded', () => {
   pobierzDane();
@@ -84,3 +84,4 @@ function aktualizujPodsumowanie(totalMinutes) {
 
   console.log(`✅ Suma: ${totalHours}:${totalRemainingMinutes.toString().padStart(2, '0')}`);
 }
+
