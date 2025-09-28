@@ -96,3 +96,4 @@ function formatDateForServer(dateStr) {
   return `${day}.${month}.${year.slice(-2)}`;
 }
 
+
