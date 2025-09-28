@@ -76,6 +76,36 @@ document.getElementById('saveBtn').addEventListener('click', async () => {
         alert('Błąd podczas zapisu');
     }
 });
+// Funkcja zapisu danych do Google Sheets
+async function saveData() {
+  const data = document.getElementById('data').value;
+  const czas = document.getElementById('czas').value;
+
+  if (!data || !czas) {
+    alert('Uzupełnij datę i czas!');
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('data', data);
+  formData.append('czas', czas);
+
+  try {
+    await fetch(API_URL, {
+      method: 'POST',
+      body: formData
+    });
+    document.getElementById('data').value = '';
+    document.getElementById('czas').value = '';
+    loadData();
+  } catch (err) {
+    alert('Błąd zapisu: ' + err.message);
+  }
+}
+
+// Obsługa przycisku "Zapisz"
+document.getElementById('zapisz').addEventListener('click', saveData);
 
 // ⏱ Start
 loadData();
+
