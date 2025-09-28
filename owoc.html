@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#222222" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <title>Czas Tracker</title>
+</head>
+<body>
+  <main>
+    <h1>Czas pracy – Wrzesień</h1>
+    <section id="summary">
+      <p><strong>Łącznie w miesiącu:</strong> <span id="total-month">...</span></p>
+      <p><strong>Cel miesięczny:</strong> 30h</p>
+      <p><strong>Do celu brakuje:</strong> <span id="left-to-goal">...</span></p>
+      <p><strong>Średnio dziennie do końca miesiąca:</strong> <span id="avg-daily">...</span></p>
+    </section>
+
+    <section id="form">
+      <h2>Dodaj wpis</h2>
+      <form id="entry-form">
+        <label>
+          Data:
+          <input type="date" id="data" required />
+        </label>
+        <label>
+          Czas (HH:MM):
+          <input type="time" id="czas" required />
+        </label>
+        <button type="submit">Zapisz</button>
+      </form>
+    </section>
+
+    <section id="details">
+      <h2>Szczegóły</h2>
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Czas</th></tr>
+        </thead>
+        <tbody id="entries"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwAmFJkJCc0jx4zP4nHday78jejaIpEWd7054tO1USmiOEQ0zE-MKGx0y8aJj7yWt6Bgw/exec';
+
+    async function fetchEntries() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      return data;
+    }
+
+    function parseTimeString(t) {
+      const [h, m] = t.split(':').map(Number);
+      return h * 60 + m;
+    }
+
+    function minutesToHM(mins) {
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return `${h}:${m.toString().padStart(2, '0')}`;
+    }
+
+    async function render() {
+      const entries = await fetchEntries();
+      const tbody = document.getElementById('entries');
+      tbody.innerHTML = '';
+      let monthTotal = 0;
+      const now = new Date();
+      const thisMonth = now.getMonth();
+
+      entries.forEach(e => {
+        const tr = document.createElement('tr');
+        const td1 = document.createElement('td');
+        const td2 = document.createElement('td');
+        td1.textContent = e.data;
+        td2.textContent = e.czas;
+        tr.append(td1, td2);
+        tbody.appendChild(tr);
+
+        const dateObj = new Date(e.data);
+        if (dateObj.getMonth() === thisMonth) {
+          monthTotal += parseTimeString(e.czas);
+        }
+      });
+
+      const totalMonthText = minutesToHM(monthTotal);
+      const goalMinutes = 30 * 60;
+      const toGoal = goalMinutes - monthTotal;
+      const daysLeft = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate() - now.getDate();
+      const avgPerDay = daysLeft > 0 ? minutesToHM(Math.ceil(toGoal / daysLeft)) : '0:00';
+
+      document.getElementById('total-month').textContent = totalMonthText;
+      document.getElementById('left-to-goal').textContent = minutesToHM(Math.max(toGoal, 0));
+      document.getElementById('avg-daily').textContent = avgPerDay;
+    }
+
+    document.getElementById('entry-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = document.getElementById('data').value;
+      const czas = document.getElementById('czas').value;
+      if (!data || !czas) return;
+      await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ data, czas }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      document.getElementById('entry-form').reset();
+      render();
+    });
+
+    render();
+  </script>
+</body>
+</html>
