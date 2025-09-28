@@ -1,4 +1,4 @@
-const API_URL = 'https://script.google.com/macros/s/AKfycbyC1xwBKI-B-fylF_r7gM5ch6UuHnC8tHzSP22TEYcGTdVirHkXyFX6xctHYmCoj3Ftsg/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbxZBWYgelwnO1T5m-T-xYxH7Z04gr3H1JF8h6Q1fDb_jlj4lv5UR3TLImcBXJXCTkYvgQ/exec';
 const CEL_GODZIN = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,3 +95,4 @@ function formatDateForServer(dateStr) {
   const [year, month, day] = dateStr.split('-');
   return `${day}.${month}.${year.slice(-2)}`;
 }
+
