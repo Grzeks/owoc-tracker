@@ -1,5 +1,4 @@
 const API_URL = 'https://script.google.com/macros/s/AKfycbxZBWYgelwnO1T5m-T-xYxH7Z04gr3H1JF8h6Q1fDb_jlj4lv5UR3TLImcBXJXCTkYvgQ/exec';
-
 const CEL_GODZIN = 30;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -19,14 +18,27 @@ document.addEventListener('DOMContentLoaded', () => {
       body: JSON.stringify(payload),
       headers: { 'Content-Type': 'application/json' }
     })
-    .then(res => res.json())
-    .then(() => {
-      document.getElementById('data').value = '';
-      document.getElementById('czas').value = '';
-      fetchData();
+    .then(async res => {
+      const text = await res.text();
+      console.log('📨 Odpowiedź z API (tekst):', text);
+
+      try {
+        const json = JSON.parse(text);
+        if (!json.success) {
+          throw new Error(json.error || 'Nieznany błąd serwera');
+        }
+
+        // Resetuj formularz
+        document.getElementById('data').value = '';
+        document.getElementById('czas').value = '';
+        fetchData();
+      } catch (err) {
+        console.error('❌ Błąd parsowania JSON:', err.message);
+        alert(`Błąd podczas zapisu! Szczegóły: ${err.message}`);
+      }
     })
     .catch(err => {
-      console.error('❌ Błąd zapisu:', err);
+      console.error('❌ Błąd zapisu (fetch):', err);
       alert('Błąd podczas zapisu! Sprawdź połączenie i uprawnienia API.');
     });
   });
@@ -96,12 +108,3 @@ function formatDateForServer(dateStr) {
   const [year, month, day] = dateStr.split('-');
   return `${day}.${month}.${year.slice(-2)}`;
 }
-
-
-
-
-
-
-
-
-
